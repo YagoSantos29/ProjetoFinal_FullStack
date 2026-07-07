@@ -3,6 +3,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const AuthController = {
+
+    //! FAZER LOGIN
+    
     login: async (req, res) =>{
         try {
             const {email, password} = req.body;
