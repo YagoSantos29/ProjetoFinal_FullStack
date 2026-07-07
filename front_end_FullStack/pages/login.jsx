@@ -7,27 +7,25 @@ function Login() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    if (!nome.trim() || !email.trim() || !senha.trim()) {
-      setErro("Preencha o nome, o e-mail e a senha para entrar.");
-      setSucesso("");
-      return;
-    }
-
-    if (
-      nome.trim().toLowerCase() === "aluno_teste" &&
-      email.trim().toLowerCase() === "aluno@escola.com" &&
-      senha === "123456"
-    ) {
-      setSucesso(`Login realizado com sucesso! Bem-vindo, ${nome}.`);
-      setErro("");
+  const handleSubmit = async (event) => {
+  event.preventDefault();
+  try {
+    const res = await fetch("http://localhost:3000/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password: senha }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setErro(data.message);
     } else {
-      setErro("Credenciais inválidas. Use nome: Aluno Teste, e-mail: aluno@escola.com e senha: 123456.");
-      setSucesso("");
+      localStorage.setItem("token", data.token);
+      setSucesso(`Bem-vindo, ${data.user.name}`);
     }
-  };
+  } catch (err) {
+    setErro("Erro ao conectar ao servidor");
+  }
+};
 
   return (
     <div>
