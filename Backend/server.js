@@ -4,6 +4,7 @@ import cors from "cors";
 
 import banco from "./database/dbConnection.js";
 
+import "./models/index.js"
 
 import authRoutes from "./routes/authRoutes.js";
 
@@ -11,32 +12,31 @@ dotenv.config();
 
 const app = express();
 
-
 app.use(cors());
 app.use(express.json());
 
 
 banco.authenticate()
     .then(() => {
-        console.log("Banco de dados conectado com sucesso!");
+        console.log(" Banco de dados conectado com sucesso!");
     })
     .catch((error) => {
-        console.log("Erro ao conectar ao banco:", error);
+        console.error(" Erro ao conectar ao banco:", error);
     });
 
 
 banco.sync()
     .then(() => {
-        console.log("Tabelas sincronizadas!");
+        console.log(" Tabelas sincronizadas!");
     })
     .catch((error) => {
-        console.log(error);
+        console.error(" Erro ao sincronizar tabelas:", error);
     });
 
-
+// Rota inicial
 app.get("/", (req, res) => {
     res.json({
-        mensagem: "API Sistema Escolar funcionando!"
+        message: "API Sistema Escolar funcionando!"
     });
 });
 
@@ -47,5 +47,5 @@ app.use("/auth", authRoutes);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+    console.log(` Servidor rodando em http://localhost:${PORT}`);
 });
