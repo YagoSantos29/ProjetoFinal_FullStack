@@ -1,8 +1,8 @@
 import { Router } from "express";
 
 import EnrollmentController from "../controllers/EnrollmentController.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
-import roleMiddleware from "../middlewares/roleMiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import roleMiddleware from "../middleware/roleMiddleware.js";
 
 const router = Router();
 
@@ -11,14 +11,14 @@ router.post(
     "/",
     authMiddleware,
     roleMiddleware("admin"),
-    EnrollmentController.create
+    EnrollmentController.createEnrollment
 );
 
 router.delete(
     "/:id",
     authMiddleware,
     roleMiddleware("admin"),
-    EnrollmentController.delete
+    EnrollmentController.deleteEnrollment
 );
 
 
@@ -28,14 +28,14 @@ router.get(
     "/",
     authMiddleware,
     roleMiddleware("admin", "professor", "aluno"),
-    EnrollmentController.index
+    EnrollmentController.getAllEnrollments
 );
 
 router.get(
     "/:id",
     authMiddleware,
     roleMiddleware("admin", "professor", "aluno"),
-    EnrollmentController.show
+    EnrollmentController.getByIdEnrollment
 );
 
 

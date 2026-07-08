@@ -1,8 +1,8 @@
 import { Router } from "express";
 
 import GradeController from "../controllers/GradeController.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
-import roleMiddleware from "../middlewares/roleMiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import roleMiddleware from "../middleware/roleMiddleware.js";
 
 const router = Router();
 
@@ -11,7 +11,7 @@ router.post(
     "/",
     authMiddleware,
     roleMiddleware("admin", "professor"),
-    GradeController.create
+    GradeController.createGrade
 );
 
 //? TODOS VISUALIZAM SUAS NOTAS
@@ -19,14 +19,14 @@ router.get(
     "/",
     authMiddleware,
     roleMiddleware("admin", "professor", "aluno"),
-    GradeController.index
+    GradeController.getAllGrade
 );
 
 router.get(
     "/:id",
     authMiddleware,
     roleMiddleware("admin", "professor", "aluno"),
-    GradeController.show
+    GradeController.getByIdGrade
 );
 
 //! PROFESSOR E ADMIN ATUALIZAM AS NOTAS
@@ -34,7 +34,7 @@ router.put(
     "/:id",
     authMiddleware,
     roleMiddleware("admin", "professor"),
-    GradeController.update
+    GradeController.updateGrade
 );
 
 //! ADMIN DELETA NOTAS
@@ -42,7 +42,7 @@ router.delete(
     "/:id",
     authMiddleware,
     roleMiddleware("admin"),
-    GradeController.delete
+    GradeController.deleteGrade
 );
 
 export default router;

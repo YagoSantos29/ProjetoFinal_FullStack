@@ -1,4 +1,4 @@
-import Enrollment from "../models/Enrollment.js";
+import Enrollment from "../models/Enrollments.js";
 
 const EnrollmentController = {
 

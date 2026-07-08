@@ -1,4 +1,4 @@
-import { UPDATE } from "sequelize/lib/query-types";
+
 import Student from "../models/Student.js"
 import User from "../models/User.js"
 
