@@ -9,14 +9,14 @@ const router = Router();
 
 //!APENAS ADMIN
 
-router.post("/", authMiddleware, roleMiddleware("admin"), UserController.createUser);
+router.post("/", UserController.createUser);
 router.get("/", authMiddleware, roleMiddleware("admin"), UserController.getAllUsers);
 router.get("/:id", authMiddleware, roleMiddleware("admin"), UserController.getUserById);
-<<<<<<< Updated upstream
+
 router.put("/:id", authMiddleware, roleMiddleware("admin"), UserController.updateUser);
-=======
-router.put("/:id", authMiddleware, roleMiddleware("admin"), UserController.updateUserUser);
->>>>>>> Stashed changes
+
+router.put("/:id", authMiddleware, roleMiddleware("admin"), UserController.updateUser);
+
 router.delete("/:id", authMiddleware, roleMiddleware("admin"), UserController.deleteUser);
 
 export default router;

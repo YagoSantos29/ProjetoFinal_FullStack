@@ -1,224 +1,249 @@
-
-import Student from "../models/Student.js"
-import User from "../models/User.js"
+import Student from "../models/Student.js";
+import User from "../models/User.js";
 
 const StudentController = {
 
     //! ADMIN CRIA ALUNO
 
-    createStudent : async (req, res) => {
+    createStudent: async (req, res) => {
         try {
+
             const {
+                name,
+                email,
                 userId,
                 registration,
-                birthDate,
-                phone
+                age
             } = req.body;
 
             const user = await User.findByPk(userId);
 
-            if(!user){
+            if (!user) {
                 return res.status(404).json({
                     data: null,
                     message: "Usuário não encontrado"
                 });
             }
 
-            if(user.role !== "aluno"){
-                return res.status(404).json({
+            if (user.role !== "aluno") {
+                return res.status(400).json({
                     data: null,
-                    message: "Usuário informado não possui role aluno"
+                    message: "O usuário informado não possui a role aluno."
                 });
             }
 
-            const studentExisting = await Student.findOne ({
+            const studentExisting = await Student.findOne({
                 where: { userId }
             });
 
-            if(studentExisting){
-                return res.status(404).json({
+            if (studentExisting) {
+                return res.status(400).json({
                     data: null,
-                    message: "Estudante já possui cadastro"
+                    message: "Este usuário já possui cadastro de aluno."
                 });
             }
 
             const student = await Student.create({
+                name,
+                email,
                 userId,
                 registration,
-                birthDate,
-                phone
+                age
             });
 
-            return res.status(200).json({
-                message: "Aluno cadastrado com sucesso",
+            return res.status(201).json({
+                message: "Aluno cadastrado com sucesso!",
                 student
             });
-        } catch (error) {
-            return res.status(500).json({
-                message: "Erro interno ao cadastrar usuário",
-                message: error.message
-            })
 
+        } catch (error) {
+
+            return res.status(500).json({
+                message: error.message
+            });
 
         }
-            
-
     },
-       //!ADMIN E DOCENTE LISTAM TODOS OS ALUNOS
 
-       getAllStudent : async (req, res) => {
-          try {
+    //! ADMIN E PROFESSOR LISTAM TODOS OS ALUNOS
+
+    getAllStudent: async (req, res) => {
+
+        try {
+
             const students = await Student.findAll({
                 include: {
                     model: User,
-                    attributes: ["id", "name", "email"]
+                    as: "user",
+                    attributes: ["id", "name", "email", "role"]
                 }
             });
 
             return res.status(200).json({
-                message: "Alunos listados com sucesso",
+                message: "Alunos listados com sucesso!",
                 students
-            })
-          } catch (error){
-              return res.status(500).json({
-                message: "Erro interno a listar todos os alunos",
+            });
+
+        } catch (error) {
+
+            return res.status(500).json({
                 message: error.message
-              });
-          }
+            });
+
+        }
 
     },
 
-       //! ADMIN E DOCENTE LISTAM ALUNO POR ID
+    //! BUSCAR ALUNO POR ID
 
-       getByIdStudent : async (req, res) => {
+    getByIdStudent: async (req, res) => {
+
         try {
+
             const { id } = req.params;
 
             const student = await Student.findByPk(id, {
                 include: {
                     model: User,
-                    attributes: ["id", "name", "email"]
+                    as: "user",
+                    attributes: ["id", "name", "email", "role"]
                 }
             });
 
-            if(!student) {
+            if (!student) {
                 return res.status(404).json({
                     data: null,
-                    message: "Aluno não encontrado"
+                    message: "Aluno não encontrado."
                 });
             }
 
             return res.status(200).json({
-                message:`Aluno do id ${userId} listado com sucesso!`,
+                message: `Aluno ${id} encontrado com sucesso!`,
                 student
             });
-        } catch(error) {
+
+        } catch (error) {
+
             return res.status(500).json({
-                message: "Erro interno ao listar aluno por id",
                 message: error.message
             });
+
         }
+
     },
 
-    //! ADMIN ATUALIZA ALUNO
+    //! ATUALIZAR ALUNO
 
     updateStudent: async (req, res) => {
-     try {
-        const { id } = req.params;
 
-        const student = await Student.findByPk(id);
+        try {
 
-        if(!student) {
-            return res.status(404).json({
-                data: null,
-                message: "Aluno não encontrado"
-            });
-        }
-
-        await student.student(req.body);
-
-        return res.status(200).json({
-            message: "Aluno atualizado com sucesso",
-            student
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            message: "Erro interno ao atualizar aluno",
-            message: error.message
-        })
-       }
-
-
-    },
-
-    //! ADMIN DELETA ALUNO
-
-    deleteStudent: async (req, res) => {
-        try{
             const { id } = req.params;
 
-            const student = await Student.findByPk(id)
+            const student = await Student.findByPk(id);
 
-            if(!student){
+            if (!student) {
+
                 return res.status(404).json({
                     data: null,
-                    message: "Aluno não encontrado"
-                })
+                    message: "Aluno não encontrado."
+                });
+
             }
 
-            await student.destroy()
+            await student.update(req.body);
 
             return res.status(200).json({
-                message: "Aluno deletado com sucesso"
+                message: "Aluno atualizado com sucesso!",
+                student
             });
+
         } catch (error) {
+
             return res.status(500).json({
-                message: "Erro interno ao deletar usuário",
                 message: error.message
             });
-        
+
         }
 
     },
 
+    //! DELETAR ALUNO
 
-    //! ALUNO VISUALIZA SEUS DADOS
-    
+    deleteStudent: async (req, res) => {
+
+        try {
+
+            const { id } = req.params;
+
+            const student = await Student.findByPk(id);
+
+            if (!student) {
+
+                return res.status(404).json({
+                    data: null,
+                    message: "Aluno não encontrado."
+                });
+
+            }
+
+            await student.destroy();
+
+            return res.status(200).json({
+                message: "Aluno deletado com sucesso!"
+            });
+
+        } catch (error) {
+
+            return res.status(500).json({
+                message: error.message
+            });
+
+        }
+
+    },
+
+    //! ALUNO VISUALIZA O PRÓPRIO PERFIL
+
     viewStudent: async (req, res) => {
-        try{
+
+        try {
+
             const student = await Student.findOne({
                 where: {
                     userId: req.user.id
                 },
-                include:  {
+                include: {
                     model: User,
-                    attributes: ["name", "email", "grade"]
+                    as: "user",
+                    attributes: ["id", "name", "email"]
                 }
             });
 
-            if(!student) {
+            if (!student) {
+
                 return res.status(404).json({
                     data: null,
-                    message: "Aluno não encontrado"
+                    message: "Aluno não encontrado."
                 });
+
             }
 
             return res.status(200).json({
-                message: "Seu perfil:"
-            })
-        } catch(error){
+                message: "Perfil do aluno",
+                student
+            });
+
+        } catch (error) {
+
             return res.status(500).json({
-                message: "Erro interno ao buscar seus dados",
                 message: error.message
             });
+
         }
-    
-    
+
     }
 
+};
 
-
-}
-
-export default StudentController
+export default StudentController;
