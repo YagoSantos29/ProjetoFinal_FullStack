@@ -1,52 +1,47 @@
 import { useState } from "react";
+import { login } from "../src/services/authService";
 
-function Login() {
-  const [nome, setNome] = useState("");
+function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
-  const [sucesso, setSucesso] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setErro("");
 
-    if (!nome.trim() || !email.trim() || !senha.trim()) {
-      setErro("Preencha o nome, o e-mail e a senha para entrar.");
-      setSucesso("");
+    if (!email.trim() || !senha.trim()) {
+      setErro("Preencha o e-mail e a senha para entrar.");
       return;
     }
 
-    if (
-      nome.trim().toLowerCase() === "aluno_teste" &&
-      email.trim().toLowerCase() === "aluno@escola.com" &&
-      senha === "123456"
-    ) {
-      setSucesso(`Login realizado com sucesso! Bem-vindo, ${nome}.`);
-      setErro("");
-    } else {
-      setErro("Credenciais inválidas. Use nome: Aluno Teste, e-mail: aluno@escola.com e senha: 123456.");
-      setSucesso("");
+    setCarregando(true);
+
+    try {
+      const response = await login(email.trim(), senha);
+      const { token, user } = response.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      onLoginSuccess(user);
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message ||
+        "Não foi possível fazer login. Tente novamente.";
+      setErro(mensagem);
+    } finally {
+      setCarregando(false);
     }
   };
 
   return (
-    <div>
+    <div className="login-page">
       <h1>Sistema Escolar</h1>
       <p>Acesse o painel da escola</p>
 
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="nome">Nome</label>
-          <input
-            id="nome"
-            type="text"
-            value={nome}
-            onChange={(event) => setNome(event.target.value)}
-            placeholder="Aluno Teste"
-            required
-          />
-        </div>
-
         <div>
           <label htmlFor="email">E-mail</label>
           <input
@@ -54,7 +49,7 @@ function Login() {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="aluno@escola.com"
+            placeholder="usuario@escola.com"
             required
           />
         </div>
@@ -71,10 +66,11 @@ function Login() {
           />
         </div>
 
-        <button type="submit">Entrar</button>
+        <button type="submit" disabled={carregando}>
+          {carregando ? "Entrando..." : "Entrar"}
+        </button>
 
-        {erro ? <p>{erro}</p> : null}
-        {sucesso ? <p>{sucesso}</p> : null}
+        {erro ? <p className="login-error">{erro}</p> : null}
       </form>
     </div>
   );
