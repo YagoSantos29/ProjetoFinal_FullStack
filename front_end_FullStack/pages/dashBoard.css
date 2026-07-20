@@ -1,0 +1,130 @@
+:root {
+  --papel: #f7f3e8;
+  --papel-linha: #d9cfb0;
+  --papel-card: #fffdf8;
+  --tinta: #2b2a28;
+  --tinta-suave: #6b6558;
+  --verde-lousa: #1e4d3b;
+  --verde-lousa-escuro: #163a2c;
+  --verde-lousa-clara: #e7efe9;
+  --vermelho-caneta: #b33a3a;
+  --vermelho-caneta-fundo: #f7e6e6;
+  --sombra: rgba(43, 42, 40, 0.1);
+ 
+  --fonte-titulo: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --fonte-corpo: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+ 
+* {
+  box-sizing: border-box;
+}
+ 
+body {
+  margin: 0;
+  font-family: var(--fonte-corpo);
+  color: var(--tinta);
+  background: var(--papel);
+}
+ 
+.dashboard-page {
+  min-height: 100vh;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+ 
+/* Cabeçalho estilo lousa */
+.dashboard-page > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 24px 0 28px;
+  padding: 20px 28px;
+  background: var(--verde-lousa-escuro);
+  border-radius: 6px;
+  box-shadow: 0 10px 26px var(--sombra);
+}
+ 
+.dashboard-page > header h1 {
+  font-family: var(--fonte-titulo);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #fdfbf5;
+  flex-basis: 100%;
+}
+ 
+.dashboard-page > header p {
+  margin: 0;
+  color: #cfe3d6;
+  font-size: 0.9rem;
+}
+ 
+.dashboard-page > header button {
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--verde-lousa-escuro);
+  background: #fdfbf5;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+ 
+.dashboard-page > header button:hover {
+  background: var(--vermelho-caneta-fundo);
+  color: var(--vermelho-caneta);
+}
+ 
+
+.dashboard-page > p {
+  padding: 16px 20px;
+  background: var(--papel-card);
+  border: 1px dashed var(--papel-linha);
+  border-radius: 4px;
+  color: var(--tinta-suave);
+}
+ 
+
+.dashboard-page form {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  align-items: end;
+  background: var(--papel-card);
+  border: 1px solid var(--papel-linha);
+  border-radius: 5px;
+  padding: 24px 24px 24px 40px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 18px var(--sombra);
+}
+ 
+.dashboard-page form::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20px;
+  bottom: 0;
+  width: 1.5px;
+  background: var(--vermelho-caneta);
+  opacity: 0.5;
+}
+ 
+.dashboard-page form > div {
+  display: flex;
+  flex-direction: column;
+}
+ 
+.dashboard-page form label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--verde-lousa-escuro);
+  margin-bottom: 6px;
+}
+ 
