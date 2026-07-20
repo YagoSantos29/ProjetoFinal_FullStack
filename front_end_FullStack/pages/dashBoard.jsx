@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./dashBoard.css";
 import {
   getStudents,
   createStudent,
