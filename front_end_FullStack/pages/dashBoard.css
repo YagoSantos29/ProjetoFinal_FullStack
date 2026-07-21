@@ -33,7 +33,6 @@ body {
   padding: 0 24px 48px;
 }
  
-/* Cabeçalho estilo lousa */
 .dashboard-page > header {
   display: flex;
   align-items: center;
@@ -239,7 +238,6 @@ body {
   color: #fff;
 }
  
-/* acessibilidade */
 .dashboard-page button:focus-visible,
 .dashboard-page input:focus-visible {
   outline: 2px solid var(--verde-lousa);

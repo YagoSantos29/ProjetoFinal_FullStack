@@ -9,6 +9,21 @@ function Login({ onLoginSuccess }) {
   const [carregando, setCarregando] = useState(false);
 
   const handleSubmit = async (event) => {
+<<<<<<< HEAD
+  event.preventDefault();
+  try {
+    const res = await fetch("http://localhost:3000/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password: senha }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setErro(data.message);
+    } else {
+      localStorage.setItem("token", data.token);
+      setSucesso(`Bem-vindo, ${data.user.name}`);
+=======
     event.preventDefault();
     setErro("");
 
@@ -34,8 +49,12 @@ function Login({ onLoginSuccess }) {
       setErro(mensagem);
     } finally {
       setCarregando(false);
+>>>>>>> 92396ccae3bf6bb2d31d53e01152a51829d67d0f
     }
-  };
+  } catch (err) {
+    setErro("Erro ao conectar ao servidor");
+  }
+};
 
   return (
     <div className="login-page">
