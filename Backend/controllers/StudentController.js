@@ -11,11 +11,15 @@ const StudentController = {
             const {
                 name,
                 email,
-                userId,
+                
                 registration,
                 age
             } = req.body;
 
+
+
+            console.log(req.body);
+console.log("userId recebido:", userId);
             const user = await User.findByPk(userId);
 
             if (!user) {

@@ -4,7 +4,14 @@ import {
   getStudents,
   createStudent,
   deleteStudent,
+  viewStudent,
 } from "../src/services/studentService";
+import { getClasses, createClass } from "../src/services/classService";
+import {
+  getGrades,
+  createGrade,
+  deleteGrade,
+} from "../src/services/gradeService";
 
 function DashBoard({ user, onLogout }) {
   const [students, setStudents] = useState([]);
@@ -14,13 +21,55 @@ function DashBoard({ user, onLogout }) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    userId: "",
+    password: "",
     registration: "",
     age: "",
   });
 
   const podeGerenciar = user?.role === "admin" || user?.role === "professor";
   const podeCriarExcluir = user?.role === "admin";
+
+  // Notas (professor e admin cadastram; só admin exclui)
+  const podeLancarNotas = user?.role === "admin" || user?.role === "professor";
+  const [classes, setClasses] = useState([]);
+  const [grades, setGrades] = useState([]);
+  const [carregandoNotas, setCarregandoNotas] = useState(false);
+  const [erroNotas, setErroNotas] = useState("");
+  const [enviandoNota, setEnviandoNota] = useState(false);
+  const [gradeFormData, setGradeFormData] = useState({
+    studentId: "",
+    classId: "",
+    grade: "",
+  });
+
+  // Turmas (professor e admin cadastram; só admin edita/exclui)
+  const podeCriarTurma = user?.role === "admin" || user?.role === "professor";
+  const [erroTurma, setErroTurma] = useState("");
+  const [enviandoTurma, setEnviandoTurma] = useState(false);
+  const [classFormData, setClassFormData] = useState({ name: "" });
+
+  // Aluno visualiza seu próprio perfil: turmas, dados de matrícula e notas
+  const ehAluno = user?.role === "aluno";
+  const [meuPerfil, setMeuPerfil] = useState(null);
+  const [carregandoPerfil, setCarregandoPerfil] = useState(false);
+  const [erroPerfil, setErroPerfil] = useState("");
+
+  const carregarMeuPerfil = async () => {
+    setCarregandoPerfil(true);
+    setErroPerfil("");
+
+    try {
+      const response = await viewStudent();
+      setMeuPerfil(response.data.student || null);
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message ||
+        "Não foi possível carregar seus dados.";
+      setErroPerfil(mensagem);
+    } finally {
+      setCarregandoPerfil(false);
+    }
+  };
 
   const carregarAlunos = async () => {
     setCarregando(true);
@@ -39,11 +88,47 @@ function DashBoard({ user, onLogout }) {
     }
   };
 
+  const carregarTurmas = async () => {
+    try {
+      const response = await getClasses();
+      setClasses(response.data || []);
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message || "Não foi possível carregar as turmas.";
+      setErroNotas(mensagem);
+    }
+  };
+
+  const carregarNotas = async () => {
+    setCarregandoNotas(true);
+    setErroNotas("");
+
+    try {
+      const response = await getGrades();
+      setGrades(response.data || []);
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message || "Não foi possível carregar as notas.";
+      setErroNotas(mensagem);
+    } finally {
+      setCarregandoNotas(false);
+    }
+  };
+
   useEffect(() => {
     if (podeGerenciar) {
       carregarAlunos();
     }
-  }, [podeGerenciar]);
+
+    if (podeLancarNotas) {
+      carregarTurmas();
+      carregarNotas();
+    }
+
+    if (ehAluno) {
+      carregarMeuPerfil();
+    }
+  }, [podeGerenciar, podeLancarNotas, ehAluno]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -54,8 +139,8 @@ function DashBoard({ user, onLogout }) {
     event.preventDefault();
     setErro("");
 
-    if (!formData.name.trim() || !formData.email.trim() || !formData.userId.trim()) {
-      setErro("Preencha nome, e-mail e ID do usuário para cadastrar o aluno.");
+    if (!formData.name.trim() || !formData.email.trim() || !formData.password.trim()) {
+      setErro("Preencha nome, e-mail e senha para cadastrar o aluno.");
       return;
     }
 
@@ -65,12 +150,12 @@ function DashBoard({ user, onLogout }) {
       await createStudent({
         name: formData.name.trim(),
         email: formData.email.trim(),
-        userId: Number(formData.userId),
+        password: formData.password,
         registration: formData.registration.trim(),
         age: formData.age ? Number(formData.age) : null,
       });
 
-      setFormData({ name: "", email: "", userId: "", registration: "", age: "" });
+      setFormData({ name: "", email: "", password: "", registration: "", age: "" });
       await carregarAlunos();
     } catch (error) {
       const mensagem =
@@ -96,6 +181,91 @@ function DashBoard({ user, onLogout }) {
     }
   };
 
+  const handleGradeChange = (event) => {
+    const { name, value } = event.target;
+    setGradeFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCreateGrade = async (event) => {
+    event.preventDefault();
+    setErroNotas("");
+
+    if (!gradeFormData.studentId || !gradeFormData.classId || gradeFormData.grade === "") {
+      setErroNotas("Selecione o aluno, a turma e informe a nota.");
+      return;
+    }
+
+    setEnviandoNota(true);
+
+    try {
+      await createGrade({
+        studentId: Number(gradeFormData.studentId),
+        classId: Number(gradeFormData.classId),
+        grade: Number(gradeFormData.grade),
+      });
+
+      setGradeFormData({ studentId: "", classId: "", grade: "" });
+      await carregarNotas();
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message ||
+        "Não foi possível cadastrar a nota.";
+      setErroNotas(mensagem);
+    } finally {
+      setEnviandoNota(false);
+    }
+  };
+
+  const handleDeleteGrade = async (id) => {
+    setErroNotas("");
+
+    try {
+      await deleteGrade(id);
+      await carregarNotas();
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message ||
+        "Não foi possível excluir a nota.";
+      setErroNotas(mensagem);
+    }
+  };
+
+  const nomeAluno = (studentId) =>
+    students.find((student) => student.id === studentId)?.name || `Aluno #${studentId}`;
+
+  const nomeTurma = (classId) =>
+    classes.find((turma) => turma.id === classId)?.name || `Turma #${classId}`;
+
+  const handleClassChange = (event) => {
+    const { name, value } = event.target;
+    setClassFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCreateClass = async (event) => {
+    event.preventDefault();
+    setErroTurma("");
+
+    if (!classFormData.name.trim()) {
+      setErroTurma("Informe o nome da turma.");
+      return;
+    }
+
+    setEnviandoTurma(true);
+
+    try {
+      await createClass({ name: classFormData.name.trim() });
+      setClassFormData({ name: "" });
+      await carregarTurmas();
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message ||
+        "Não foi possível cadastrar a turma.";
+      setErroTurma(mensagem);
+    } finally {
+      setEnviandoTurma(false);
+    }
+  };
+
   return (
     <div className="dashboard-page">
       <header>
@@ -106,7 +276,93 @@ function DashBoard({ user, onLogout }) {
         </button>
       </header>
 
-      {!podeGerenciar ? (
+      {ehAluno ? (
+        <>
+          {erroPerfil ? <p className="dashboard-error">{erroPerfil}</p> : null}
+
+          {carregandoPerfil ? (
+            <p>Carregando seus dados...</p>
+          ) : !meuPerfil ? (
+            <p>Não foi possível encontrar seus dados de matrícula.</p>
+          ) : (
+            <>
+              <section className="grades-section">
+                <h2>Meus dados de matrícula</h2>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td data-label="Nome">Nome</td>
+                      <td data-label="Valor">{meuPerfil.name}</td>
+                    </tr>
+                    <tr>
+                      <td data-label="E-mail">E-mail</td>
+                      <td data-label="Valor">{meuPerfil.email}</td>
+                    </tr>
+                    <tr>
+                      <td data-label="Matrícula">Matrícula</td>
+                      <td data-label="Valor">{meuPerfil.registration || "-"}</td>
+                    </tr>
+                    <tr>
+                      <td data-label="Idade">Idade</td>
+                      <td data-label="Valor">{meuPerfil.age ?? "-"}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+
+              <section className="grades-section">
+                <h2>Minhas turmas</h2>
+                {meuPerfil.enrollments?.length ? (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Turma</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {meuPerfil.enrollments.map((matricula) => (
+                        <tr key={matricula.id}>
+                          <td data-label="Turma">
+                            {matricula.class?.name || `Turma #${matricula.classId}`}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p>Você ainda não está matriculado em nenhuma turma.</p>
+                )}
+              </section>
+
+              <section className="grades-section">
+                <h2>Minhas notas</h2>
+                {meuPerfil.grades?.length ? (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Turma</th>
+                        <th>Nota</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {meuPerfil.grades.map((nota) => (
+                        <tr key={nota.id}>
+                          <td data-label="Turma">
+                            {nota.class?.name || `Turma #${nota.classId}`}
+                          </td>
+                          <td data-label="Nota">{nota.grade}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p>Nenhuma nota lançada até o momento.</p>
+                )}
+              </section>
+            </>
+          )}
+        </>
+      ) : !podeGerenciar ? (
         <p>Seu perfil não possui acesso à listagem de alunos.</p>
       ) : (
         <>
@@ -137,13 +393,14 @@ function DashBoard({ user, onLogout }) {
               </div>
 
               <div>
-                <label htmlFor="userId">ID do usuário</label>
+                <label htmlFor="password">Senha de acesso</label>
                 <input
-                  id="userId"
-                  name="userId"
-                  type="number"
-                  value={formData.userId}
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
                   onChange={handleChange}
+                  placeholder="Senha inicial do aluno"
                   required
                 />
               </div>
@@ -210,6 +467,144 @@ function DashBoard({ user, onLogout }) {
               </tbody>
             </table>
           )}
+
+          {podeCriarTurma ? (
+            <section className="grades-section">
+              <h2>Turmas</h2>
+
+              <form onSubmit={handleCreateClass}>
+                <div>
+                  <label htmlFor="className">Nome da turma</label>
+                  <input
+                    id="className"
+                    name="name"
+                    type="text"
+                    value={classFormData.name}
+                    onChange={handleClassChange}
+                    placeholder="Ex: Turma A - 2026"
+                    required
+                  />
+                </div>
+
+                <button type="submit" disabled={enviandoTurma}>
+                  {enviandoTurma ? "Cadastrando..." : "Cadastrar turma"}
+                </button>
+              </form>
+
+              {erroTurma ? <p className="dashboard-error">{erroTurma}</p> : null}
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nome da turma</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {classes.map((turma) => (
+                    <tr key={turma.id}>
+                      <td>{turma.name}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          ) : null}
+
+          {podeLancarNotas ? (
+            <section className="grades-section">
+              <h2>Notas</h2>
+
+              <form onSubmit={handleCreateGrade}>
+                <div>
+                  <label htmlFor="studentId">Aluno</label>
+                  <select
+                    id="studentId"
+                    name="studentId"
+                    value={gradeFormData.studentId}
+                    onChange={handleGradeChange}
+                    required
+                  >
+                    <option value="">Selecione o aluno</option>
+                    {students.map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="classId">Turma</label>
+                  <select
+                    id="classId"
+                    name="classId"
+                    value={gradeFormData.classId}
+                    onChange={handleGradeChange}
+                    required
+                  >
+                    <option value="">Selecione a turma</option>
+                    {classes.map((turma) => (
+                      <option key={turma.id} value={turma.id}>
+                        {turma.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="grade">Nota</label>
+                  <input
+                    id="grade"
+                    name="grade"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="10"
+                    value={gradeFormData.grade}
+                    onChange={handleGradeChange}
+                    required
+                  />
+                </div>
+
+                <button type="submit" disabled={enviandoNota}>
+                  {enviandoNota ? "Cadastrando..." : "Cadastrar nota"}
+                </button>
+              </form>
+
+              {erroNotas ? <p className="dashboard-error">{erroNotas}</p> : null}
+
+              {carregandoNotas ? (
+                <p>Carregando notas...</p>
+              ) : (
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Aluno</th>
+                      <th>Turma</th>
+                      <th>Nota</th>
+                      {podeCriarExcluir ? <th>Ações</th> : null}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {grades.map((grade) => (
+                      <tr key={grade.id}>
+                        <td>{nomeAluno(grade.studentId)}</td>
+                        <td>{nomeTurma(grade.classId)}</td>
+                        <td>{grade.grade}</td>
+                        {podeCriarExcluir ? (
+                          <td>
+                            <button type="button" onClick={() => handleDeleteGrade(grade.id)}>
+                              Excluir
+                            </button>
+                          </td>
+                        ) : null}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+          ) : null}
         </>
       )}
     </div>
