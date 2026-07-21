@@ -6,11 +6,11 @@ import roleMiddleware from "../middleware/roleMiddleware.js";
 
 const router = Router();
 
-//!ADM CRIA, EDITA E DELETA TURMA
+//! ADMIN E PROFESSOR CADASTRAM TURMA / SÓ ADMIN EDITA E DELETA
 router.post(
     "/",
     authMiddleware,
-    roleMiddleware("admin"),
+    roleMiddleware("admin", "professor"),
     ClassController.createClass
 );
 

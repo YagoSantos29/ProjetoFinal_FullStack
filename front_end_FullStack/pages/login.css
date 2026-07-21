@@ -71,6 +71,7 @@ body {
 }
  
 .login-page form::before {
+  /* margem vermelha estilo caneta */
   content: "";
   position: absolute;
   top: 0;

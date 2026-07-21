@@ -1,59 +1,68 @@
 import Student from "../models/Student.js";
 import User from "../models/User.js";
+import banco from "../database/dbConnection.js";
+import bcrypt from "bcrypt";
 
 const StudentController = {
 
-    //! ADMIN CRIA ALUNO
+    //! ADMIN CRIA ALUNO (cria o User de login e o Student juntos, em uma única transação)
 
     createStudent: async (req, res) => {
+
+        const transaction = await banco.transaction();
+
         try {
 
             const {
                 name,
                 email,
-                
+                password,
                 registration,
                 age
             } = req.body;
 
-
-
-            console.log(req.body);
-console.log("userId recebido:", userId);
-            const user = await User.findByPk(userId);
-
-            if (!user) {
-                return res.status(404).json({
-                    data: null,
-                    message: "Usuário não encontrado"
-                });
-            }
-
-            if (user.role !== "aluno") {
+            if (!name || !email || !password) {
+                await transaction.rollback();
                 return res.status(400).json({
                     data: null,
-                    message: "O usuário informado não possui a role aluno."
+                    message: "Nome, e-mail e senha são obrigatórios."
                 });
             }
 
-            const studentExisting = await Student.findOne({
-                where: { userId }
+            const existingUser = await User.findOne({
+                where: { email },
+                transaction
             });
 
-            if (studentExisting) {
-                return res.status(400).json({
+            if (existingUser) {
+                await transaction.rollback();
+                return res.status(409).json({
                     data: null,
-                    message: "Este usuário já possui cadastro de aluno."
+                    message: "Já existe um usuário cadastrado com este e-mail."
                 });
             }
 
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Cria o login (User) do aluno. O id é auto-increment, gerado pelo banco.
+            const user = await User.create({
+                name,
+                email,
+                password: hashedPassword,
+                role: "aluno"
+            }, { transaction });
+
+            // Cria a ficha acadêmica (Student), já vinculada ao User acima.
+            // O id do Student também é auto-increment, gerado pelo banco.
             const student = await Student.create({
                 name,
                 email,
-                userId,
+                userId: user.id,
                 registration,
                 age
-            });
+            }, { transaction });
+
+            await transaction.commit();
 
             return res.status(201).json({
                 message: "Aluno cadastrado com sucesso!",
@@ -61,6 +70,8 @@ console.log("userId recebido:", userId);
             });
 
         } catch (error) {
+
+            await transaction.rollback();
 
             return res.status(500).json({
                 message: error.message

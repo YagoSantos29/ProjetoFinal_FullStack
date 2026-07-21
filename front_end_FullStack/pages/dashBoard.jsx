@@ -4,7 +4,6 @@ import {
   getStudents,
   createStudent,
   deleteStudent,
-  viewStudent,
 } from "../src/services/studentService";
 import { getClasses, createClass } from "../src/services/classService";
 import {
@@ -47,29 +46,6 @@ function DashBoard({ user, onLogout }) {
   const [erroTurma, setErroTurma] = useState("");
   const [enviandoTurma, setEnviandoTurma] = useState(false);
   const [classFormData, setClassFormData] = useState({ name: "" });
-
-  // Aluno visualiza seu próprio perfil: turmas, dados de matrícula e notas
-  const ehAluno = user?.role === "aluno";
-  const [meuPerfil, setMeuPerfil] = useState(null);
-  const [carregandoPerfil, setCarregandoPerfil] = useState(false);
-  const [erroPerfil, setErroPerfil] = useState("");
-
-  const carregarMeuPerfil = async () => {
-    setCarregandoPerfil(true);
-    setErroPerfil("");
-
-    try {
-      const response = await viewStudent();
-      setMeuPerfil(response.data.student || null);
-    } catch (error) {
-      const mensagem =
-        error.response?.data?.message ||
-        "Não foi possível carregar seus dados.";
-      setErroPerfil(mensagem);
-    } finally {
-      setCarregandoPerfil(false);
-    }
-  };
 
   const carregarAlunos = async () => {
     setCarregando(true);
@@ -124,11 +100,7 @@ function DashBoard({ user, onLogout }) {
       carregarTurmas();
       carregarNotas();
     }
-
-    if (ehAluno) {
-      carregarMeuPerfil();
-    }
-  }, [podeGerenciar, podeLancarNotas, ehAluno]);
+  }, [podeGerenciar, podeLancarNotas]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -276,93 +248,7 @@ function DashBoard({ user, onLogout }) {
         </button>
       </header>
 
-      {ehAluno ? (
-        <>
-          {erroPerfil ? <p className="dashboard-error">{erroPerfil}</p> : null}
-
-          {carregandoPerfil ? (
-            <p>Carregando seus dados...</p>
-          ) : !meuPerfil ? (
-            <p>Não foi possível encontrar seus dados de matrícula.</p>
-          ) : (
-            <>
-              <section className="grades-section">
-                <h2>Meus dados de matrícula</h2>
-                <table>
-                  <tbody>
-                    <tr>
-                      <td data-label="Nome">Nome</td>
-                      <td data-label="Valor">{meuPerfil.name}</td>
-                    </tr>
-                    <tr>
-                      <td data-label="E-mail">E-mail</td>
-                      <td data-label="Valor">{meuPerfil.email}</td>
-                    </tr>
-                    <tr>
-                      <td data-label="Matrícula">Matrícula</td>
-                      <td data-label="Valor">{meuPerfil.registration || "-"}</td>
-                    </tr>
-                    <tr>
-                      <td data-label="Idade">Idade</td>
-                      <td data-label="Valor">{meuPerfil.age ?? "-"}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </section>
-
-              <section className="grades-section">
-                <h2>Minhas turmas</h2>
-                {meuPerfil.enrollments?.length ? (
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Turma</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {meuPerfil.enrollments.map((matricula) => (
-                        <tr key={matricula.id}>
-                          <td data-label="Turma">
-                            {matricula.class?.name || `Turma #${matricula.classId}`}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <p>Você ainda não está matriculado em nenhuma turma.</p>
-                )}
-              </section>
-
-              <section className="grades-section">
-                <h2>Minhas notas</h2>
-                {meuPerfil.grades?.length ? (
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Turma</th>
-                        <th>Nota</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {meuPerfil.grades.map((nota) => (
-                        <tr key={nota.id}>
-                          <td data-label="Turma">
-                            {nota.class?.name || `Turma #${nota.classId}`}
-                          </td>
-                          <td data-label="Nota">{nota.grade}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <p>Nenhuma nota lançada até o momento.</p>
-                )}
-              </section>
-            </>
-          )}
-        </>
-      ) : !podeGerenciar ? (
+      {!podeGerenciar ? (
         <p>Seu perfil não possui acesso à listagem de alunos.</p>
       ) : (
         <>

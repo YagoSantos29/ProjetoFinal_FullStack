@@ -33,6 +33,7 @@ body {
   padding: 0 24px 48px;
 }
  
+/* Cabeçalho estilo lousa */
 .dashboard-page > header {
   display: flex;
   align-items: center;
@@ -127,7 +128,8 @@ body {
   margin-bottom: 6px;
 }
  
-.dashboard-page form input {
+.dashboard-page form input,
+.dashboard-page form select {
   padding: 9px 10px;
   font-size: 0.9rem;
   font-family: var(--fonte-corpo);
@@ -139,9 +141,20 @@ body {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
  
-.dashboard-page form input:focus {
+.dashboard-page form input:focus,
+.dashboard-page form select:focus {
   border-color: var(--verde-lousa);
   box-shadow: 0 0 0 3px rgba(30, 77, 59, 0.15);
+}
+
+.grades-section {
+  margin-top: 40px;
+}
+
+.grades-section h2 {
+  font-family: var(--fonte-titulo);
+  color: var(--verde-lousa-escuro);
+  margin-bottom: 16px;
 }
  
 .dashboard-page form button[type="submit"] {
@@ -238,6 +251,7 @@ body {
   color: #fff;
 }
  
+/* acessibilidade */
 .dashboard-page button:focus-visible,
 .dashboard-page input:focus-visible {
   outline: 2px solid var(--verde-lousa);
