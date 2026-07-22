@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./dashBoard.css";
 
-// Importações dos Serviços
+// Importações dos Serviços (Caminho correto a partir de /pages)
 import {
   getStudents,
   createStudent,

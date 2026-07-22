@@ -13,7 +13,7 @@ router.post("/", authMiddleware, roleMiddleware("admin"), StudentController.crea
 router.get("/", authMiddleware, roleMiddleware("admin", "professor"), StudentController.getAllStudent);
 router.get("/:id", authMiddleware, roleMiddleware("admin", "professor"), StudentController.getByIdStudent);
 router.put("/:id", authMiddleware, roleMiddleware("admin"), StudentController.updateStudent);
-router.delete("/", authMiddleware, roleMiddleware("admin"), StudentController.deleteStudent);
+router.delete("/students/:id", authMiddleware, roleMiddleware("admin", "professor"), StudentController.deleteStudent);
 
 
 //! ALUNO
