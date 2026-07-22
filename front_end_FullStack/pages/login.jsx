@@ -2,6 +2,10 @@ import { useState } from "react";
 import "./login.css";
 import { login } from "../src/services/authService";
 
+import { InputText } from "primereact/inputtext";
+import { Password } from "primereact/password";
+import { Message } from "primereact/message";
+
 function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -21,6 +25,7 @@ function Login({ onLoginSuccess }) {
 
     try {
       const response = await login(email.trim(), senha);
+
       const { token, user } = response.data;
 
       localStorage.setItem("token", token);
@@ -28,10 +33,10 @@ function Login({ onLoginSuccess }) {
 
       onLoginSuccess(user);
     } catch (error) {
-      const mensagem =
+      setErro(
         error.response?.data?.message ||
-        "Não foi possível fazer login. Tente novamente.";
-      setErro(mensagem);
+          "Não foi possível fazer login."
+      );
     } finally {
       setCarregando(false);
     }
@@ -39,40 +44,73 @@ function Login({ onLoginSuccess }) {
 
   return (
     <div className="login-page">
-      <h1>Sistema Escolar</h1>
-      <p>Acesse o painel da escola</p>
+
+      <div className="login-header">
+
+        <div className="login-icon">
+          <i className="pi pi-building-columns"></i>
+        </div>
+
+        <h1>Sistema Escolar</h1>
+
+        <p>Acesse o painel da escola</p>
+
+      </div>
 
       <form onSubmit={handleSubmit}>
+
         <div>
-          <label htmlFor="email">E-mail</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="usuario@escola.com"
-            required
-          />
+          <label>E-mail</label>
+
+          <span className="p-input-icon-left w-full">
+            <i className="pi pi-envelope"></i>
+
+            <InputText
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="usuario@escola.com"
+              className="w-full"
+            />
+          </span>
+
         </div>
 
         <div>
-          <label htmlFor="senha">Senha</label>
-          <input
-            id="senha"
-            type="password"
+
+          <label>Senha</label>
+
+          <Password
             value={senha}
-            onChange={(event) => setSenha(event.target.value)}
+            onChange={(e) => setSenha(e.target.value)}
+            feedback={false}
+            toggleMask
             placeholder="Digite sua senha"
-            required
+            className="w-full"
+            inputClassName="w-full"
           />
+
         </div>
 
-        <button type="submit" disabled={carregando}>
+        <button disabled={carregando}>
+
+          <i className="pi pi-sign-in"></i>
+
+          &nbsp;
+
           {carregando ? "Entrando..." : "Entrar"}
+
         </button>
 
-        {erro ? <p className="login-error">{erro}</p> : null}
+        {erro && (
+          <Message
+            severity="error"
+            text={erro}
+            className="login-message"
+          />
+        )}
+
       </form>
+
     </div>
   );
 }
