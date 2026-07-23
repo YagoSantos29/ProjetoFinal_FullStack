@@ -6,6 +6,7 @@ import {
   getStudents,
   createStudent,
   deleteStudent,
+  viewStudent,
 } from "../src/services/studentService";
 import {
   getClasses,
@@ -51,6 +52,10 @@ function DashBoard({ user, onLogout }) {
   const podeCriarExcluir = user?.role === "admin";
   const podeLancarNotas = user?.role === "admin" || user?.role === "professor";
   const podeCriarTurma = user?.role === "admin" || user?.role === "professor";
+  const isAluno = user?.role === "aluno";
+
+  const [meuPerfil, setMeuPerfil] = useState(null);
+  const [carregandoPerfil, setCarregandoPerfil] = useState(false);
 
   const [classes, setClasses] = useState([]);
   const [grades, setGrades] = useState([]);
@@ -106,13 +111,26 @@ function DashBoard({ user, onLogout }) {
     }
   };
 
+  const carregarMeuPerfil = async () => {
+    setCarregandoPerfil(true);
+    try {
+      const response = await viewStudent();
+      setMeuPerfil(response.data.student || null);
+    } catch (error) {
+      mostrarErro(error.response?.data?.message || "Não foi possível carregar seus dados.");
+    } finally {
+      setCarregandoPerfil(false);
+    }
+  };
+
   useEffect(() => {
     if (podeGerenciar) carregarAlunos();
     if (podeLancarNotas) {
       carregarTurmas();
       carregarNotas();
     }
-  }, [podeGerenciar, podeLancarNotas]);
+    if (isAluno) carregarMeuPerfil();
+  }, [podeGerenciar, podeLancarNotas, isAluno]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -328,7 +346,63 @@ function DashBoard({ user, onLogout }) {
         />
       </header>
 
-      {!podeGerenciar ? (
+      {isAluno ? (
+        <>
+          <Card title={<><i className="pi pi-id-card mr-2"></i>Minha Matrícula</>} className="dashboard-card">
+            {carregandoPerfil ? (
+              <div className="flex justify-content-center p-4">
+                <ProgressSpinner style={{ width: '50px', height: '50px' }} />
+              </div>
+            ) : meuPerfil ? (
+              <div className="inputs-grid">
+                <div className="field">
+                  <label>Nome</label>
+                  <p className="m-0">{meuPerfil.name}</p>
+                </div>
+                <div className="field">
+                  <label>E-mail</label>
+                  <p className="m-0">{meuPerfil.email}</p>
+                </div>
+                <div className="field">
+                  <label>Matrícula</label>
+                  <p className="m-0">{meuPerfil.registration || "Não informada"}</p>
+                </div>
+                <div className="field">
+                  <label>Idade</label>
+                  <p className="m-0">{meuPerfil.age ?? "Não informada"}</p>
+                </div>
+              </div>
+            ) : (
+              <Message severity="warn" text="Não foi possível carregar seus dados de matrícula." className="w-full" />
+            )}
+          </Card>
+
+          <Card title={<><i className="pi pi-bookmark mr-2"></i>Minhas Turmas</>} className="dashboard-card">
+            <DataTable
+              value={meuPerfil?.enrollments || []}
+              responsiveLayout="scroll"
+              emptyMessage="Você ainda não está matriculado em nenhuma turma."
+              className="p-datatable-striped"
+              loading={carregandoPerfil}
+            >
+              <Column field={(row) => row.class?.name || `Turma #${row.classId}`} header="Turma" sortable />
+            </DataTable>
+          </Card>
+
+          <Card title={<><i className="pi pi-book mr-2"></i>Minhas Notas</>} className="dashboard-card">
+            <DataTable
+              value={meuPerfil?.grades || []}
+              responsiveLayout="scroll"
+              emptyMessage="Nenhuma nota lançada ainda."
+              className="p-datatable-striped"
+              loading={carregandoPerfil}
+            >
+              <Column field={(row) => row.class?.name || `Turma #${row.classId}`} header="Turma" sortable />
+              <Column field={(row) => notaFormatada(row.grade)} header="Nota" sortable />
+            </DataTable>
+          </Card>
+        </>
+      ) : !podeGerenciar ? (
         <Message severity="warn" text="Seu perfil não possui acesso à listagem de alunos." className="w-full" />
       ) : (
         <>

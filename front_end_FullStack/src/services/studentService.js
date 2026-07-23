@@ -21,5 +21,5 @@ export const deleteStudent = (id) => {
 };
 
 export const viewStudent = () => {
-    return api.get("/students/profile");
+    return api.get("/students/me");
 };

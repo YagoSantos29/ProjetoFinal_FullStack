@@ -1,5 +1,8 @@
 import Student from "../models/Student.js";
 import User from "../models/User.js";
+import Enrollment from "../models/Enrollments.js";
+import Grade from "../models/Grade.js";
+import Class from "../models/Class.js";
 import banco from "../database/dbConnection.js";
 import bcrypt from "bcrypt";
 
@@ -228,11 +231,29 @@ const StudentController = {
                 where: {
                     userId: req.user.id
                 },
-                include: {
-                    model: User,
-                    as: "user",
-                    attributes: ["id", "name", "email"]
-                }
+                include: [
+                    {
+                        model: User,
+                        as: "user",
+                        attributes: ["id", "name", "email"]
+                    },
+                    {
+                        model: Enrollment,
+                        as: "enrollments",
+                        include: {
+                            model: Class,
+                            as: "class"
+                        }
+                    },
+                    {
+                        model: Grade,
+                        as: "grades",
+                        include: {
+                            model: Class,
+                            as: "class"
+                        }
+                    }
+                ]
             });
 
             if (!student) {

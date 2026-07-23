@@ -18,6 +18,11 @@ const Student = banco.define('Student', {
         allowNull: true
     },
 
+    registration: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+
     email: {
         type: DataTypes.STRING,
         allowNull: false,
