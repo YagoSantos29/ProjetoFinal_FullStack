@@ -17,7 +17,7 @@ export const updateStudent = (id, data) => {
 };
 
 export const deleteStudent = (id) => {
-    return api.delete(`/student/${id}`);
+    return api.delete(`/students/${id}`);
 };
 
 export const viewStudent = () => {
