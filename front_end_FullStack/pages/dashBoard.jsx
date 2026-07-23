@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./dashBoard.css";
 
-// Importações dos Serviços (Caminho correto a partir de /pages)
+// Importações dos Serviços
 import {
   getStudents,
   createStudent,
@@ -34,7 +34,6 @@ import { Card } from "primereact/card";
 function DashBoard({ user, onLogout }) {
   const toast = useRef(null);
 
-  // Estados dos Alunos
   const [students, setStudents] = useState([]);
   const [carregando, setCarregando] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -48,13 +47,11 @@ function DashBoard({ user, onLogout }) {
 
   const [errors, setErrors] = useState({});
 
-  // Permissões
   const podeGerenciar = user?.role === "admin" || user?.role === "professor";
   const podeCriarExcluir = user?.role === "admin";
   const podeLancarNotas = user?.role === "admin" || user?.role === "professor";
   const podeCriarTurma = user?.role === "admin" || user?.role === "professor";
 
-  // Estados das Turmas e Notas
   const [classes, setClasses] = useState([]);
   const [grades, setGrades] = useState([]);
   const [carregandoNotas, setCarregandoNotas] = useState(false);
@@ -68,7 +65,6 @@ function DashBoard({ user, onLogout }) {
   const [enviandoTurma, setEnviandoTurma] = useState(false);
   const [classFormData, setClassFormData] = useState({ name: "" });
 
-  // Utilitários para exibir notificações
   const mostrarSucesso = (mensagem) => {
     toast.current?.show({ severity: "success", summary: "Sucesso", detail: mensagem, life: 3000 });
   };
@@ -77,7 +73,6 @@ function DashBoard({ user, onLogout }) {
     toast.current?.show({ severity: "error", summary: "Erro", detail: mensagem, life: 4000 });
   };
 
-  // Funções de Busca
   const carregarAlunos = async () => {
     setCarregando(true);
     try {
@@ -119,7 +114,6 @@ function DashBoard({ user, onLogout }) {
     }
   }, [podeGerenciar, podeLancarNotas]);
 
-  // Handlers - Alunos
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -167,17 +161,35 @@ function DashBoard({ user, onLogout }) {
     }
   };
 
+  // 🛠️ FUNÇÃO DE EXCLUSÃO CORRIGIDA (Remove da tela imediatamente)
   const handleDelete = async (id) => {
+    if (!id) {
+      mostrarErro("ID inválido para exclusão.");
+      return;
+    }
+
+    const idLimpo = String(id).split(":")[0];
+
     try {
-      await deleteStudent(id);
+      await deleteStudent(idLimpo);
+      
       mostrarSucesso("Aluno excluído com sucesso!");
+
+      // 1. Atualiza o estado local imediatamente
+      setStudents((prevStudents) =>
+        prevStudents.filter((aluno) => {
+          const alunoId = String(aluno.id || aluno.studentId || aluno.userId).split(":")[0];
+          return alunoId !== idLimpo;
+        })
+      );
+
+      // 2. Rebusca do servidor para confirmar sincronia
       await carregarAlunos();
     } catch (error) {
       mostrarErro(error.response?.data?.message || "Não foi possível excluir o aluno.");
     }
   };
 
-  // Handlers - Turmas
   const handleCreateClass = async (event) => {
     event.preventDefault();
 
@@ -209,7 +221,6 @@ function DashBoard({ user, onLogout }) {
     }
   };
 
-  // Handlers - Notas
   const handleCreateGrade = async (event) => {
     event.preventDefault();
 
@@ -252,9 +263,8 @@ function DashBoard({ user, onLogout }) {
     }
   };
 
-  // Mapeamentos
   const nomeAluno = (studentId) =>
-    students.find((s) => s.id === studentId)?.name || `Aluno #${studentId}`;
+    students.find((s) => s.id === studentId || s.userId === studentId)?.name || `Aluno #${studentId}`;
 
   const nomeTurma = (classId) =>
     classes.find((t) => t.id === classId)?.name || `Turma #${classId}`;
@@ -267,14 +277,14 @@ function DashBoard({ user, onLogout }) {
     });
   };
 
-  // Templates da DataTable
+  // 🛠️ BOTÃO DE AÇÃO DO ALUNO
   const acoesAlunoTemplate = (rowData) => (
     <Button
       icon="pi pi-trash"
       severity="danger"
       text
       rounded
-      onClick={() => handleDelete(rowData.id)}
+      onClick={() => handleDelete(rowData.studentId || rowData.id || rowData.userId)}
       tooltip="Excluir Aluno"
     />
   );
@@ -305,7 +315,6 @@ function DashBoard({ user, onLogout }) {
     <div className="dashboard-page">
       <Toast ref={toast} />
 
-      {/* Header */}
       <header className="dashboard-header">
         <div>
           <h1 className="m-0"><i className="pi pi-building mr-2"></i>Painel Escolar</h1>
@@ -323,7 +332,6 @@ function DashBoard({ user, onLogout }) {
         <Message severity="warn" text="Seu perfil não possui acesso à listagem de alunos." className="w-full" />
       ) : (
         <>
-          {/* SEÇÃO 1: GESTÃO DE ALUNOS */}
           <Card title={<><i className="pi pi-users mr-2"></i>Gestão de Alunos</>} className="dashboard-card">
             {podeCriarExcluir && (
               <form onSubmit={handleCreate} className="form-section" noValidate>
@@ -422,7 +430,6 @@ function DashBoard({ user, onLogout }) {
             )}
           </Card>
 
-          {/* SEÇÃO 2: TURMAS */}
           {podeCriarTurma && (
             <Card title={<><i className="pi pi-bookmark mr-2"></i>Turmas</>} className="dashboard-card">
               <form onSubmit={handleCreateClass} className="form-section" noValidate>
@@ -455,7 +462,6 @@ function DashBoard({ user, onLogout }) {
             </Card>
           )}
 
-          {/* SEÇÃO 3: LANÇAMENTO DE NOTAS */}
           {podeLancarNotas && (
             <Card title={<><i className="pi pi-book mr-2"></i>Lançamento de Notas</>} className="dashboard-card">
               <form onSubmit={handleCreateGrade} className="form-section" noValidate>

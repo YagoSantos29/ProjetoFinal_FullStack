@@ -1,6 +1,4 @@
-/* ==========================================
-   1. LAYOUT DA PÁGINA
-   ========================================== */
+
 .dashboard-page {
   background-color: #eef3f8;
   min-height: 100vh;
@@ -8,7 +6,7 @@
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
-/* Header superior */
+
 .dashboard-header {
   background: #ffffff;
   padding: 20px 28px;
@@ -20,7 +18,7 @@
   margin-bottom: 25px;
 }
 
-/* BOTÃO DE SAIR */
+
 .p-button.btn-logout {
   padding: 10px 22px !important;
   font-size: 15px !important;
@@ -49,7 +47,7 @@
   border-color: #fca5a5 !important;
 }
 
-/* Cards principais */
+
 .dashboard-card {
   background: #ffffff !important;
   border-radius: 16px !important;
@@ -59,9 +57,7 @@
   margin-bottom: 30px !important;
 }
 
-/* ==========================================
-   2. FORMULÁRIO E INPUTS LADO A LADO
-   ========================================== */
+
 .form-section {
   background-color: #f8fafc;
   padding: 24px;
@@ -104,9 +100,7 @@
   height: 100% !important;
 }
 
-/* ==========================================
-   3. ESTILIZAÇÃO MODERNA DOS DROPDOWNS
-   ========================================== */
+
 .p-dropdown {
   border-radius: 8px !important;
   border-color: #cbd5e1 !important;
@@ -123,7 +117,7 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
 }
 
-/* Painel flutuante de opções (Dropdown Panel) */
+
 .custom-dropdown-panel {
   background: #ffffff !important;
   border-radius: 10px !important;
@@ -133,7 +127,7 @@
   overflow: hidden !important;
 }
 
-/* Caixa de pesquisa interna do Dropdown */
+
 .custom-dropdown-panel .p-dropdown-filter-container {
   padding: 10px 12px !important;
   border-bottom: 1px solid #f1f5f9 !important;
@@ -152,7 +146,7 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
 }
 
-/* Itens da lista flutuante */
+
 .custom-dropdown-panel .p-dropdown-items {
   padding: 6px !important;
 }
@@ -176,9 +170,7 @@
   font-weight: 600 !important;
 }
 
-/* ==========================================
-   4. MENSAGENS E BORDAS DE ERRO CUSTOMIZADAS
-   ========================================== */
+
 .p-error {
   color: #ef4444 !important;
   font-size: 12px !important;
@@ -194,9 +186,7 @@
   box-shadow: 0 0 0 1px #ef4444 !important;
 }
 
-/* ==========================================
-   5. BOTÕES DE AÇÃO (TRAVADOS NO MEIO)
-   ========================================== */
+
 .button-container {
   display: flex;
   justify-content: center;
@@ -240,9 +230,7 @@
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4) !important;
 }
 
-/* ==========================================
-   6. TABELAS
-   ========================================== */
+
 .p-datatable {
   border-radius: 12px;
   overflow: hidden;
@@ -258,9 +246,7 @@
   padding: 16px !important;
 }
 
-/* ==========================================
-   7. RESPONSIVIDADE
-   ========================================== */
+
 @media (max-width: 768px) {
   .dashboard-page {
     padding: 15px;
